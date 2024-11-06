@@ -12,13 +12,14 @@ project("media3ext")
 set(ffmpeg_dir ${CMAKE_SOURCE_DIR}/../../../../ffmpeg/output)
 set(ffmpeg_libs ${ffmpeg_dir}/lib/${ANDROID_ABI})
 
+include_directories(${CMAKE_SOURCE_DIR}/../../../../ffmpeg/sources/ffmpeg-6.0)
 include_directories(${ffmpeg_dir}/include/${ANDROID_ABI})
 
 set(
         # List variable name
         ffmpeg_libs_names
         # Values in the list
-        av3ad avutil avcodec swresample swscale)
+        avutil avcodec swresample swscale av3ad)
 
 foreach (ffmpeg_lib_name ${ffmpeg_libs_names})
     add_library(
