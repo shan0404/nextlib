@@ -21,7 +21,7 @@ import java.util.List;
 /** FFmpeg audio decoder. */
 /* package */
 @SuppressLint("UnsafeOptInUsageError")
-final class FfmpegAudioDecoder
+public final class FfmpegAudioDecoder
     extends SimpleDecoder<DecoderInputBuffer, SimpleDecoderOutputBuffer, FfmpegDecoderException> {
 
   // Output buffer sizes when decoding PCM mu-law streams, which is the maximum FFmpeg outputs.
@@ -69,6 +69,8 @@ final class FfmpegAudioDecoder
   public String getName() {
     return "ffmpeg" + FfmpegLibrary.getVersion() + "-" + codecName;
   }
+
+  public String getCodecName() { return codecName; }
 
   @Override
   protected DecoderInputBuffer createInputBuffer() {

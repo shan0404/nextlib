@@ -4,6 +4,7 @@ import static androidx.media3.exoplayer.audio.AudioSink.SINK_FORMAT_SUPPORTED_DI
 import static androidx.media3.exoplayer.audio.AudioSink.SINK_FORMAT_SUPPORTED_WITH_TRANSCODING;
 import static androidx.media3.exoplayer.audio.AudioSink.SINK_FORMAT_UNSUPPORTED;
 
+import android.os.Build;
 import android.os.Handler;
 import androidx.annotation.Nullable;
 import androidx.media3.common.C;
@@ -160,5 +161,16 @@ public final class FfmpegAudioRenderer extends DecoderAudioRenderer<FfmpegAudioD
         // Always prefer 16-bit PCM if the sink does not provide direct support for floating point.
         return false;
     }
+  }
+
+  @Nullable
+  @Override
+  protected int[] getChannelMapping(FfmpegAudioDecoder decoder) {
+    if (decoder.getChannelCount() == 10 && "av3a".equals(decoder.getCodecName())) {
+      if(Build.VERSION.SDK_INT < 32)
+        return new int[] {0, 1, 2, 3, 4, 5};
+    }
+
+    return null;
   }
 }

@@ -10,6 +10,7 @@ BASE_DIR=$(cd "$(dirname "$0")" && pwd)
 BUILD_DIR=$BASE_DIR/build
 OUTPUT_DIR=$BASE_DIR/output
 SOURCES_DIR=$BASE_DIR/sources
+AV3AD_DIR=$SOURCES_DIR/av3ad
 FFMPEG_DIR=$SOURCES_DIR/ffmpeg-$FFMPEG_VERSION
 VPX_DIR=$SOURCES_DIR/libvpx-$VPX_VERSION
 MBEDTLS_DIR=$SOURCES_DIR/mbedtls-$MBEDTLS_VERSION
@@ -39,6 +40,12 @@ CMAKE_EXECUTABLE=${ANDROID_SDK_HOME}/cmake/3.22.1/bin/cmake
 
 mkdir -p $SOURCES_DIR
 
+function downloadLibav3ad() {
+  pushd $SOURCES_DIR
+  git clone https://github.com/okcaptain/avs3a av3ad
+  popd
+}
+
 function downloadLibVpx() {
   pushd $SOURCES_DIR
   echo "Downloading Vpx source code of version $VPX_VERSION..."
@@ -63,12 +70,44 @@ function downloadMbedTLS() {
 
 function downloadFfmpeg() {
   pushd $SOURCES_DIR
-  echo "Downloading FFmpeg source code of version $FFMPEG_VERSION..."
-  FFMPEG_FILE=ffmpeg-$FFMPEG_VERSION.tar.gz
-  curl -L "https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.gz" -o $FFMPEG_FILE
-  [ -e $FFMPEG_FILE ] || { echo "$FFMPEG_FILE does not exist. Exiting..."; exit 1; }
-  tar -zxf $FFMPEG_FILE
-  rm $FFMPEG_FILE
+  git clone https://github.com/okcaptain/okjack-ffmpeg.git ffmpeg-${FFMPEG_VERSION}
+  cd ffmpeg-${FFMPEG_VERSION}
+  git checkout okjack${FFMPEG_VERSION}-nextlib
+  popd
+}
+
+function buildLibav3ad() {
+  pushd $AV3AD_DIR
+
+  for ABI in $ANDROID_ABIS; do
+    CMAKE_BUILD_DIR=$AV3AD_DIR/av3ad_build_${ABI}
+    rm -rf ${CMAKE_BUILD_DIR}
+    mkdir -p ${CMAKE_BUILD_DIR}
+    cd ${CMAKE_BUILD_DIR}
+    mkdir -p $BUILD_DIR/external/$ABI
+
+     $CMAKE_EXECUTABLE .. \
+      -DCMAKE_VERBOSE_MAKEFILE=ON \
+      -DCMAKE_SYSTEM_NAME=Android \
+      -DCMAKE_SYSTEM_VERSION=${ANDROID_PLATFORM} \
+      -DCMAKE_ANDROID_ARCH_ABI=$ABI \
+      -DANDROID_PLATFORM=android-${ANDROID_PLATFORM} \
+      -DANDROID_ARM_NEON=1 \
+      -DPROJECT_ABI=$ABI \
+      -DANDROID_ABI=$ABI \
+      -DANDROID_NDK=$ANDROID_NDK_HOME \
+      -DCMAKE_ANDROID_NDK=$ANDROID_NDK_HOME \
+      -DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK_HOME}/build/cmake/android.toolchain.cmake \
+      -DBUILD_SHARED_LIBS=1 \
+      -DCMAKE_INSTALL_PREFIX=$BUILD_DIR/external/$ABI
+
+    make clean
+    make
+    make install
+
+#    cat $BUILD_DIR/external/$ABI/lib/pkgconfig/av3ad.pc
+  done
+
   popd
 }
 
@@ -205,6 +244,8 @@ function buildFfmpeg() {
     DEP_CFLAGS="-I$BUILD_DIR/external/$ABI/include"
     DEP_LD_FLAGS="-L$BUILD_DIR/external/$ABI/lib"
 
+    export PKG_CONFIG_PATH="$BUILD_DIR/external/$ABI/lib/pkgconfig"
+
     # Configure FFmpeg build
     ./configure \
       --prefix=$BUILD_DIR/$ABI \
@@ -236,6 +277,7 @@ function buildFfmpeg() {
       --enable-swresample \
       --enable-avformat \
       --enable-libvpx \
+      --enable-libav3ad \
       --enable-protocol=file,http,https,mmsh,mmst,pipe,rtmp,rtmps,rtmpt,rtmpts,rtp,tls \
       --enable-version3 \
       --enable-mbedtls \
@@ -254,6 +296,12 @@ function buildFfmpeg() {
     mkdir -p "${OUTPUT_LIB}"
     cp "${BUILD_DIR}"/"${ABI}"/lib/*.so "${OUTPUT_LIB}"
 
+    ls -al "${OUTPUT_LIB}"
+    ls -al "${BUILD_DIR}"/external/"${ABI}"/lib
+
+    cp "${BUILD_DIR}"/external/"${ABI}"/lib/libav3ad.so "${OUTPUT_LIB}"
+
+
     OUTPUT_HEADERS=${OUTPUT_DIR}/include/${ABI}
     mkdir -p "${OUTPUT_HEADERS}"
     cp -r "${BUILD_DIR}"/"${ABI}"/include/* "${OUTPUT_HEADERS}"
@@ -263,6 +311,12 @@ function buildFfmpeg() {
 }
 
 if [[ ! -d "$OUTPUT_DIR" && ! -d "$BUILD_DIR" ]]; then
+
+  # Download Libav3ad source code if it doesn't exist
+  if [[ ! -d "$AV3AD_DIR" ]]; then
+    downloadLibav3ad
+  fi
+
   # Download MbedTLS source code if it doesn't exist
   if [[ ! -d "$MBEDTLS_DIR" ]]; then
     downloadMbedTLS
@@ -279,6 +333,7 @@ if [[ ! -d "$OUTPUT_DIR" && ! -d "$BUILD_DIR" ]]; then
   fi
 
   # Building library
+  buildLibav3ad
   buildMbedTLS
   buildLibVpx
   buildFfmpeg
