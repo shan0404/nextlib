@@ -72,7 +72,9 @@ function downloadFfmpeg() {
   pushd $SOURCES_DIR
   git clone https://github.com/okcaptain/okjack-ffmpeg.git ffmpeg-${FFMPEG_VERSION}
   cd ffmpeg-${FFMPEG_VERSION}
-  git checkout okjack${FFMPEG_VERSION}-nextlib
+  git checkout okjack${FFMPEG_VERSION}-nextlib -b okjack
+  ls -al ./
+  cat ./libavcodec/av3adec.c
   popd
 }
 
