@@ -239,7 +239,7 @@ function buildFfmpeg() {
       --ranlib="${TOOLCHAIN_PREFIX}/bin/llvm-ranlib" \
       --strip="${TOOLCHAIN_PREFIX}/bin/llvm-strip" \
       --extra-cflags="-O3 -fPIC $DEP_CFLAGS" \
-      --extra-ldflags="$DEP_LD_FLAGS" \
+      --extra-ldflags="-ldl $DEP_LD_FLAGS" \
       --pkg-config="$(which pkg-config)" \
       --target-os=android \
       --enable-shared \
