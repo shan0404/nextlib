@@ -239,7 +239,6 @@ function buildFfmpeg() {
       --enable-avformat \
       --enable-libvpx \
       --enable-libarcdav3a \
-      --ld="g++" \
       --extra-libs="-lpthread -lm" \
       --enable-protocol=file,http,https,mmsh,mmst,pipe,rtmp,rtmps,rtmpt,rtmpts,rtp,tls \
       --enable-version3 \
