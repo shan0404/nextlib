@@ -80,33 +80,14 @@ function downloadFfmpeg() {
 
 function buildLibav3ad() {
   pushd $AV3AD_DIR
+  cd ./avs3Decoder/build/aarch64/
+  chmod +x ./build.sh
 
   for ABI in $ANDROID_ABIS; do
-    CMAKE_BUILD_DIR=$AV3AD_DIR/av3ad_build_${ABI}
-    rm -rf ${CMAKE_BUILD_DIR}
-    mkdir -p ${CMAKE_BUILD_DIR}
-    cd ${CMAKE_BUILD_DIR}
-    mkdir -p $BUILD_DIR/external/$ABI
-
-     $CMAKE_EXECUTABLE .. \
-      -DCMAKE_VERBOSE_MAKEFILE=ON \
-      -DCMAKE_SYSTEM_NAME=Android \
-      -DCMAKE_SYSTEM_VERSION=${ANDROID_PLATFORM} \
-      -DCMAKE_ANDROID_ARCH_ABI=$ABI \
-      -DANDROID_PLATFORM=android-${ANDROID_PLATFORM} \
-      -DPROJECT_ABI=$ABI \
-      -DANDROID_ABI=$ABI \
-      -DANDROID_NDK=$ANDROID_NDK_HOME \
-      -DCMAKE_ANDROID_NDK=$ANDROID_NDK_HOME \
-      -DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK_HOME}/build/cmake/android.toolchain.cmake \
-      -DBUILD_SHARED_LIBS=1 \
-      -DCMAKE_INSTALL_PREFIX=$BUILD_DIR/external/$ABI
-
-    make clean
-    make
-    make install
-
-#    cat $BUILD_DIR/external/$ABI/lib/pkgconfig/av3ad.pc
+    mkdir -p $BUILD_DIR/external/$ABI/lib/
+    ./build.sh $ABI
+    ls -al ./libs/$ABI/
+    cp ./libs/$ABI/libav3ad.so $BUILD_DIR/external/$ABI/lib/
   done
 
   popd
