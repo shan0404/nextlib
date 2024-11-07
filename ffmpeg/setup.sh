@@ -86,8 +86,8 @@ function buildLibav3ad() {
   for ABI in $ANDROID_ABIS; do
     mkdir -p $BUILD_DIR/external/$ABI/lib/
     ./build.sh $ABI
-    ls -al ../../../libs/$ABI/
-    cp ../../../libs/$ABI/libav3ad.so $BUILD_DIR/external/$ABI/lib/
+    cp $AV3AD_DIR/libs/$ABI/libav3ad.so $BUILD_DIR/external/$ABI/lib/libav3ad.so
+    ls -al $BUILD_DIR/external/$ABI/lib/
   done
 
   popd
@@ -287,6 +287,8 @@ function buildFfmpeg() {
     OUTPUT_HEADERS=${OUTPUT_DIR}/include/${ABI}
     mkdir -p "${OUTPUT_HEADERS}"
     cp -r "${BUILD_DIR}"/"${ABI}"/include/* "${OUTPUT_HEADERS}"
+
+    ls -al ${OUTPUT_LIB}
 
   done
   popd
