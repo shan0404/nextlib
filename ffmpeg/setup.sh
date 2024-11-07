@@ -82,7 +82,7 @@ function buildLibav3ad() {
   pushd $AV3AD_DIR
   cd ./avs3Decoder/build/aarch64/
   chmod +x ./build.sh
-
+  export ANDROID_NDK=$ANDROID_NDK_HOME
   for ABI in $ANDROID_ABIS; do
     mkdir -p $BUILD_DIR/external/$ABI/lib/
     ./build.sh $ABI
