@@ -84,10 +84,9 @@ function buildLibav3ad() {
   chmod +x ./build.sh
   export ANDROID_NDK=$ANDROID_NDK_HOME
   for ABI in $ANDROID_ABIS; do
-    mkdir -p $BUILD_DIR/external/$ABI/lib/
+    mkdir -p $BUILD_DIR/external/$ABI
     ./build.sh $ABI
-    cp $AV3AD_DIR/libs/$ABI/libav3ad.so $BUILD_DIR/external/$ABI/lib/libav3ad.so
-    ls -al $BUILD_DIR/external/$ABI/lib/
+    ls -al $AV3AD_DIR/libs/$ABI
   done
 
   popd
@@ -224,7 +223,7 @@ function buildFfmpeg() {
 
     # Referencing dependencies without pkgconfig
     DEP_CFLAGS="-I$BUILD_DIR/external/$ABI/include"
-    DEP_LD_FLAGS="-L$BUILD_DIR/external/$ABI/lib -lav3ad"
+    DEP_LD_FLAGS="-L$BUILD_DIR/external/$ABI/lib"
 
     export PKG_CONFIG_PATH="$BUILD_DIR/external/$ABI/lib/pkgconfig"
 
@@ -281,8 +280,7 @@ function buildFfmpeg() {
     ls -al "${OUTPUT_LIB}"
     ls -al "${BUILD_DIR}"/external/"${ABI}"/lib
 
-    cp "${BUILD_DIR}"/external/"${ABI}"/lib/libav3ad.so "${OUTPUT_LIB}"
-
+    cp $AV3AD_DIR/libs/$ABI/libav3ad.so ${OUTPUT_LIB}/libav3ad.so
 
     OUTPUT_HEADERS=${OUTPUT_DIR}/include/${ABI}
     mkdir -p "${OUTPUT_HEADERS}"
