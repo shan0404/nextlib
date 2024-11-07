@@ -86,8 +86,8 @@ function buildLibav3ad() {
   for ABI in $ANDROID_ABIS; do
     mkdir -p $BUILD_DIR/external/$ABI/lib/
     ./build.sh $ABI
-    ls -al ./libs/$ABI/
-    cp ./libs/$ABI/libav3ad.so $BUILD_DIR/external/$ABI/lib/
+    ls -al ../../../libs/$ABI/
+    cp ../../../libs/$ABI/libav3ad.so $BUILD_DIR/external/$ABI/lib/
   done
 
   popd
