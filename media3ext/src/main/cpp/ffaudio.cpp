@@ -113,7 +113,8 @@ AVCodecContext *createContext(JNIEnv *env, AVCodec *codec, jbyteArray extraData,
 }
 
 int decodePacket(AVCodecContext *context, AVPacket *packet,
-                 uint8_t *outputBuffer, int outputSize, GrowOutputBufferCallback growBuffer) {
+                 uint8_t *outputBuffer, int outputSize,
+                 GrowOutputBufferCallback growBuffer) {
     int result = 0;
     // Queue input data.
     result = avcodec_send_packet(context, packet);
@@ -143,24 +144,28 @@ int decodePacket(AVCodecContext *context, AVPacket *packet,
         // Resample output.
         AVSampleFormat sampleFormat = context->sample_fmt;
         int channelCount = context->ch_layout.nb_channels;
-        int channelLayout = (int) context->ch_layout.u.mask;
         int sampleRate = context->sample_rate;
         int sampleCount = frame->nb_samples;
-        int dataSize = av_samples_get_buffer_size(nullptr, channelCount, sampleCount,
+        int dataSize = av_samples_get_buffer_size(NULL, channelCount, sampleCount,
                                                   sampleFormat, 1);
-        SwrContext *resampleContext;
-        if (context->opaque) {
-            resampleContext = (SwrContext *) context->opaque;
-        } else {
-            resampleContext = swr_alloc();
-            av_opt_set_int(resampleContext, "in_channel_layout", channelLayout, 0);
-            av_opt_set_int(resampleContext, "out_channel_layout", channelLayout, 0);
-            av_opt_set_int(resampleContext, "in_sample_rate", sampleRate, 0);
-            av_opt_set_int(resampleContext, "out_sample_rate", sampleRate, 0);
-            av_opt_set_int(resampleContext, "in_sample_fmt", sampleFormat, 0);
-            // The output format is always the requested format.
-            av_opt_set_int(resampleContext, "out_sample_fmt",
-                           context->request_sample_fmt, 0);
+        SwrContext *resampleContext = static_cast<SwrContext *>(context->opaque);
+        if (!resampleContext) {
+            result =
+                    swr_alloc_set_opts2(&resampleContext,             // ps
+                                        &context->ch_layout,          // out_ch_layout
+                                        context->request_sample_fmt,  // out_sample_fmt
+                                        sampleRate,                   // out_sample_rate
+                                        &context->ch_layout,          // in_ch_layout
+                                        sampleFormat,                 // in_sample_fmt
+                                        sampleRate,                   // in_sample_rate
+                                        0,                            // log_offset
+                                        NULL                          // log_ctx
+                    );
+            if (result < 0) {
+                logError("swr_alloc_set_opts2", result);
+                av_frame_free(&frame);
+                return transformError(result);
+            }
             result = swr_init(resampleContext);
             if (result < 0) {
                 logError("swr_init", result);
@@ -169,7 +174,7 @@ int decodePacket(AVCodecContext *context, AVPacket *packet,
             }
             context->opaque = resampleContext;
         }
-        int inSampleSize = av_get_bytes_per_sample(sampleFormat);
+
         int outSampleSize = av_get_bytes_per_sample(context->request_sample_fmt);
         int outSamples = swr_get_out_samples(resampleContext, sampleCount);
         int bufferOutSize = outSampleSize * channelCount * outSamples;
@@ -187,7 +192,7 @@ int decodePacket(AVCodecContext *context, AVPacket *packet,
             }
         }
         result = swr_convert(resampleContext, &outputBuffer, bufferOutSize,
-                             (const uint8_t **) frame->data, frame->nb_samples);
+                             (const uint8_t **)frame->data, frame->nb_samples);
         av_frame_free(&frame);
         if (result < 0) {
             logError("swr_convert", result);
