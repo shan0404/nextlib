@@ -158,6 +158,9 @@ function buildMbedTLS() {
 
 function buildFfmpeg() {
   pushd $FFMPEG_DIR
+
+  cd ./ffmpeg/ffmpeg-6.1
+
   EXTRA_BUILD_CONFIGURATION_FLAGS=""
   COMMON_OPTIONS=""
 
