@@ -10,7 +10,6 @@ BASE_DIR=$(cd "$(dirname "$0")" && pwd)
 BUILD_DIR=$BASE_DIR/build
 OUTPUT_DIR=$BASE_DIR/output
 SOURCES_DIR=$BASE_DIR/sources
-AV3AD_DIR=$SOURCES_DIR/av3ad
 FFMPEG_DIR=$SOURCES_DIR/ffmpeg-$FFMPEG_VERSION
 VPX_DIR=$SOURCES_DIR/libvpx-$VPX_VERSION
 MBEDTLS_DIR=$SOURCES_DIR/mbedtls-$MBEDTLS_VERSION
@@ -39,12 +38,6 @@ TOOLCHAIN_PREFIX="${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/${HOST_PLATFORM}"
 CMAKE_EXECUTABLE=${ANDROID_SDK_HOME}/cmake/3.22.1/bin/cmake
 
 mkdir -p $SOURCES_DIR
-
-function downloadLibav3ad() {
-  pushd $SOURCES_DIR
-  git clone https://github.com/okcaptain/avs3a av3ad
-  popd
-}
 
 function downloadLibVpx() {
   pushd $SOURCES_DIR
@@ -75,20 +68,6 @@ function downloadFfmpeg() {
   git checkout okjack${FFMPEG_VERSION}-nextlib
   ls -al ./
   cat ./libavcodec/av3adec.c
-  popd
-}
-
-function buildLibav3ad() {
-  pushd $AV3AD_DIR
-  cd ./avs3Decoder/build/aarch64/
-  chmod +x ./build.sh
-  export ANDROID_NDK=$ANDROID_NDK_HOME
-  for ABI in $ANDROID_ABIS; do
-    mkdir -p $BUILD_DIR/external/$ABI
-    ./build.sh $ABI
-    ls -al $AV3AD_DIR/libs/$ABI
-  done
-
   popd
 }
 
@@ -225,7 +204,6 @@ function buildFfmpeg() {
     DEP_CFLAGS="-I$BUILD_DIR/external/$ABI/include"
     DEP_LD_FLAGS="-L$BUILD_DIR/external/$ABI/lib"
 
-    export PKG_CONFIG_PATH="$BUILD_DIR/external/$ABI/lib/pkgconfig"
 
     # Configure FFmpeg build
     ./configure \
@@ -252,7 +230,6 @@ function buildFfmpeg() {
       --disable-avformat \
       --disable-postproc \
       --disable-avfilter \
-      --disable-symver \
       --enable-parsers \
       --enable-demuxers \
       --enable-swresample \
@@ -277,10 +254,6 @@ function buildFfmpeg() {
     mkdir -p "${OUTPUT_LIB}"
     cp "${BUILD_DIR}"/"${ABI}"/lib/*.so "${OUTPUT_LIB}"
 
-    ls -al "${OUTPUT_LIB}"
-    ls -al "${BUILD_DIR}"/external/"${ABI}"/lib
-
-    cp $AV3AD_DIR/libs/$ABI/libav3ad.so ${OUTPUT_LIB}/libav3ad.so
 
     OUTPUT_HEADERS=${OUTPUT_DIR}/include/${ABI}
     mkdir -p "${OUTPUT_HEADERS}"
@@ -293,11 +266,6 @@ function buildFfmpeg() {
 }
 
 if [[ ! -d "$OUTPUT_DIR" && ! -d "$BUILD_DIR" ]]; then
-
-  # Download Libav3ad source code if it doesn't exist
-  if [[ ! -d "$AV3AD_DIR" ]]; then
-    downloadLibav3ad
-  fi
 
   # Download MbedTLS source code if it doesn't exist
   if [[ ! -d "$MBEDTLS_DIR" ]]; then
@@ -315,7 +283,6 @@ if [[ ! -d "$OUTPUT_DIR" && ! -d "$BUILD_DIR" ]]; then
   fi
 
   # Building library
-  buildLibav3ad
   buildMbedTLS
   buildLibVpx
   buildFfmpeg
