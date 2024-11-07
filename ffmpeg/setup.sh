@@ -159,8 +159,6 @@ function buildMbedTLS() {
 function buildFfmpeg() {
   pushd $FFMPEG_DIR
 
-  cd ./ffmpeg/ffmpeg-6.1
-
   EXTRA_BUILD_CONFIGURATION_FLAGS=""
   COMMON_OPTIONS=""
 
@@ -206,6 +204,7 @@ function buildFfmpeg() {
     DEP_LD_FLAGS="-L$BUILD_DIR/external/$ABI/lib"
 
     chmod +x ./configure
+    chmod +x ./ffbuild/*.sh
     # Configure FFmpeg build
     ./configure \
       --prefix=$BUILD_DIR/$ABI \
