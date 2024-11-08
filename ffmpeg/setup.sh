@@ -223,7 +223,7 @@ function buildFfmpeg() {
 
     # Referencing dependencies without pkgconfig
     DEP_CFLAGS="-I$BUILD_DIR/external/$ABI/include"
-    DEP_LD_FLAGS="-L$BUILD_DIR/external/$ABI/lib -lav3ad -lm"
+    DEP_LD_FLAGS="-L$BUILD_DIR/external/$ABI/lib"
 
     export PKG_CONFIG_PATH="$BUILD_DIR/external/$ABI/lib/pkgconfig"
 
