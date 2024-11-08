@@ -3,7 +3,7 @@
 # Versions
 VPX_VERSION=1.13.0
 MBEDTLS_VERSION=3.4.1
-FFMPEG_VERSION=6.1
+FFMPEG_VERSION=6.0
 
 # Directories
 BASE_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -18,7 +18,7 @@ MBEDTLS_DIR=$SOURCES_DIR/mbedtls-$MBEDTLS_VERSION
 # Configuration
 ANDROID_ABIS="armeabi-v7a arm64-v8a"
 ANDROID_PLATFORM=21
-ENABLED_DECODERS="vorbis opus flac alac pcm_mulaw pcm_alaw mp3 amrnb amrwb aac ac3 eac3 dca mlp truehd h264 hevc mpeg2video mpegvideo libvpx_vp8 libvpx_vp9 libarcdav3a"
+ENABLED_DECODERS="vorbis opus flac alac pcm_mulaw pcm_alaw mp3 amrnb amrwb aac ac3 eac3 dca mlp truehd h264 hevc mpeg2video mpegvideo libvpx_vp8 libvpx_vp9 av3a"
 JOBS=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || sysctl -n hw.pysicalcpu || echo 4)
 
 # Set up host platform variables
@@ -241,7 +241,7 @@ function buildFfmpeg() {
       --ranlib="${TOOLCHAIN_PREFIX}/bin/llvm-ranlib" \
       --strip="${TOOLCHAIN_PREFIX}/bin/llvm-strip" \
       --extra-cflags="-O3 -fPIC $DEP_CFLAGS" \
-      --extra-ldflags="-ldl $DEP_LD_FLAGS" \
+      --extra-ldflags="$DEP_LD_FLAGS" \
       --pkg-config="$(which pkg-config)" \
       --target-os=android \
       --enable-shared \
@@ -260,7 +260,7 @@ function buildFfmpeg() {
       --enable-swresample \
       --enable-avformat \
       --enable-libvpx \
-      --enable-libarcdav3a \
+      --enable-libav3ad \
       --enable-protocol=file,http,https,mmsh,mmst,pipe,rtmp,rtmps,rtmpt,rtmpts,rtp,tls \
       --enable-version3 \
       --enable-mbedtls \

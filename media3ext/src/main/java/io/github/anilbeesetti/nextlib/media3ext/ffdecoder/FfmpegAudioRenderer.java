@@ -166,7 +166,7 @@ public final class FfmpegAudioRenderer extends DecoderAudioRenderer<FfmpegAudioD
   @Nullable
   @Override
   protected int[] getChannelMapping(FfmpegAudioDecoder decoder) {
-    if (decoder.getChannelCount() == 10 && "libarcdav3a".equals(decoder.getCodecName())) {
+    if (decoder.getChannelCount() == 10 && "av3a".equals(decoder.getCodecName())) {
       if(Build.VERSION.SDK_INT < 32)
         return new int[] {0, 1, 2, 3, 4, 5};
     }
