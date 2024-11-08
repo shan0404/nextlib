@@ -3,7 +3,7 @@
 # Versions
 VPX_VERSION=1.13.0
 MBEDTLS_VERSION=3.4.1
-FFMPEG_VERSION=6.0
+FFMPEG_VERSION=6.1
 
 # Directories
 BASE_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -18,7 +18,7 @@ MBEDTLS_DIR=$SOURCES_DIR/mbedtls-$MBEDTLS_VERSION
 # Configuration
 ANDROID_ABIS="x86 x86_64 armeabi-v7a arm64-v8a"
 ANDROID_PLATFORM=21
-ENABLED_DECODERS="vorbis opus flac alac pcm_mulaw pcm_alaw mp3 amrnb amrwb aac ac3 eac3 dca mlp truehd h264 hevc mpeg2video mpegvideo libvpx_vp8 libvpx_vp9  av3a"
+ENABLED_DECODERS="vorbis opus flac alac pcm_mulaw pcm_alaw mp3 amrnb amrwb aac ac3 eac3 dca mlp truehd h264 hevc mpeg2video mpegvideo libvpx_vp8 libvpx_vp9 libarcdav3a"
 JOBS=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || sysctl -n hw.pysicalcpu || echo 4)
 
 # Set up host platform variables
@@ -78,33 +78,14 @@ function downloadFfmpeg() {
 
 function buildLibav3ad() {
   pushd $AV3AD_DIR
-
+  cd ./avs3Decoder/build/aarch64/
+  chmod +x ./build.sh
+  export ANDROID_NDK=$ANDROID_NDK_HOME
   for ABI in $ANDROID_ABIS; do
-    CMAKE_BUILD_DIR=$AV3AD_DIR/av3ad_build_${ABI}
-    rm -rf ${CMAKE_BUILD_DIR}
-    mkdir -p ${CMAKE_BUILD_DIR}
-    cd ${CMAKE_BUILD_DIR}
-    mkdir -p $BUILD_DIR/external/$ABI
-
-     $CMAKE_EXECUTABLE .. \
-      -DCMAKE_VERBOSE_MAKEFILE=ON \
-      -DCMAKE_SYSTEM_NAME=Android \
-      -DCMAKE_SYSTEM_VERSION=${ANDROID_PLATFORM} \
-      -DCMAKE_ANDROID_ARCH_ABI=$ABI \
-      -DANDROID_PLATFORM=android-${ANDROID_PLATFORM} \
-      -DPROJECT_ABI=$ABI \
-      -DANDROID_ABI=$ABI \
-      -DANDROID_NDK=$ANDROID_NDK_HOME \
-      -DCMAKE_ANDROID_NDK=$ANDROID_NDK_HOME \
-      -DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK_HOME}/build/cmake/android.toolchain.cmake \
-      -DBUILD_SHARED_LIBS=1 \
-      -DCMAKE_INSTALL_PREFIX=$BUILD_DIR/external/$ABI
-
-    make clean
-    make
-    make install
-
-#    cat $BUILD_DIR/external/$ABI/lib/pkgconfig/av3ad.pc
+    mkdir -p $BUILD_DIR/external/$ABI/lib/
+    ./build.sh $ABI
+    cp $AV3AD_DIR/libs/$ABI/libav3ad.so $BUILD_DIR/external/$ABI/lib/libav3ad.so
+    ls -al $BUILD_DIR/external/$ABI/lib/
   done
 
   popd
@@ -260,7 +241,7 @@ function buildFfmpeg() {
       --ranlib="${TOOLCHAIN_PREFIX}/bin/llvm-ranlib" \
       --strip="${TOOLCHAIN_PREFIX}/bin/llvm-strip" \
       --extra-cflags="-O3 -fPIC $DEP_CFLAGS" \
-      --extra-ldflags="$DEP_LD_FLAGS" \
+      --extra-ldflags="-ldl $DEP_LD_FLAGS" \
       --pkg-config="$(which pkg-config)" \
       --target-os=android \
       --enable-shared \
@@ -279,7 +260,7 @@ function buildFfmpeg() {
       --enable-swresample \
       --enable-avformat \
       --enable-libvpx \
-      --enable-libav3ad \
+      --enable-libarcdav3a \
       --enable-protocol=file,http,https,mmsh,mmst,pipe,rtmp,rtmps,rtmpt,rtmpts,rtp,tls \
       --enable-version3 \
       --enable-mbedtls \
