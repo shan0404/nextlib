@@ -95,6 +95,7 @@ function buildLibav3ad() {
       -DPROJECT_ABI=$ABI \
       -DANDROID_ABI=$ABI \
       -DANDROID_NDK=$ANDROID_NDK_HOME \
+      -DANDROID_ARM_MODE=arm \
       -DCMAKE_ANDROID_NDK=$ANDROID_NDK_HOME \
       -DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK_HOME}/build/cmake/android.toolchain.cmake \
       -DBUILD_SHARED_LIBS=1 \
