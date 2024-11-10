@@ -282,7 +282,7 @@ function buildFfmpeg() {
     ls -al "${OUTPUT_LIB}"
     ls -al "${BUILD_DIR}"/external/"${ABI}"/lib
 
-    cp "${BUILD_DIR}"/external/"${ABI}"/lib/libav3ad.so "${OUTPUT_LIB}"
+#    cp "${BUILD_DIR}"/external/"${ABI}"/lib/libav3ad.so "${OUTPUT_LIB}"
 
     OUTPUT_HEADERS=${OUTPUT_DIR}/include/${ABI}
     mkdir -p "${OUTPUT_HEADERS}"
