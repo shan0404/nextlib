@@ -12,6 +12,7 @@ project("media3ext")
 set(ffmpeg_dir ${CMAKE_SOURCE_DIR}/../../../../ffmpeg/output)
 set(ffmpeg_libs ${ffmpeg_dir}/lib/${ANDROID_ABI})
 
+include_directories(${CMAKE_SOURCE_DIR}/../../../../ffmpeg/sources/ffmpeg-6.1)
 include_directories(${ffmpeg_dir}/include/${ANDROID_ABI})
 
 set(
