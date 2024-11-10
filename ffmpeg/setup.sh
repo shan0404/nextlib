@@ -282,7 +282,7 @@ function buildFfmpeg() {
     ls -al "${OUTPUT_LIB}"
     ls -al "${BUILD_DIR}"/external/"${ABI}"/lib
 
-    cp "${BUILD_DIR}"/external/"${ABI}"/lib/*.so "${OUTPUT_LIB}"
+#    cp "${BUILD_DIR}"/external/"${ABI}"/lib/*.so "${OUTPUT_LIB}"
 
     OUTPUT_HEADERS=${OUTPUT_DIR}/include/${ABI}
     mkdir -p "${OUTPUT_HEADERS}"
@@ -297,9 +297,9 @@ function buildFfmpeg() {
 if [[ ! -d "$OUTPUT_DIR" && ! -d "$BUILD_DIR" ]]; then
 
   # Download Libav3ad source code if it doesn't exist
-  if [[ ! -d "$AV3AD_DIR" ]]; then
-    downloadLibav3ad
-  fi
+#  if [[ ! -d "$AV3AD_DIR" ]]; then
+#    downloadLibav3ad
+#  fi
 
   # Download MbedTLS source code if it doesn't exist
   if [[ ! -d "$MBEDTLS_DIR" ]]; then
@@ -317,7 +317,7 @@ if [[ ! -d "$OUTPUT_DIR" && ! -d "$BUILD_DIR" ]]; then
   fi
 
   # Building library
-  buildLibav3ad
+#  buildLibav3ad
   buildMbedTLS
   buildLibVpx
   buildFfmpeg
