@@ -1,6 +1,10 @@
 name: Build 111
 
 on:
+  push:
+    branches: [ ok-20241108 ]
+  pull_request:
+    branches: [ ok-20241108 ]
   workflow_dispatch:
 concurrency:
   group: build-${{ github.ref }}
