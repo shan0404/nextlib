@@ -1,4 +1,4 @@
-name: Build 111
+name: Build 18
 
 on:
   push:
@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   build:
-    name: Build nextlib111
+    name: Build nextlib 18
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
